@@ -104,7 +104,7 @@ $(function() {
           $("#"+drinkName).removeClass('success');
           $(this).html("&nbsp;").show()
         });
-        reloadDrinks()
+        setTimeout(function(){reloadDrinks()},2000);
       }
     });
   });
@@ -118,7 +118,7 @@ $(function() {
 <BODY>
 <H1>SysDrink 2012!</H1>
 <span class="credits">front-end by Tony Tonns</span><br>
-<span class="credits"><a href="http://j.mp/OrFdOv" target="_new">graphs</a>/data by Justin Lintz</span><br>
+<span class="credits"><a href="http://j.mp/sysdrink-graph" target="_new">graphs</a>/data by Justin Lintz</span><br>
 <br>
 
 <div id="newDrink">
