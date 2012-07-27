@@ -1,0 +1,140 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML>
+<HEAD>
+<TITLE>SysDrink 2012!</TITLE>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<META NAME="Author" CONTENT="Anthony Tonns">
+<META HTTP-EQUIV="Refresh" CONTENT="600">
+<STYLE type="text/css">
+  BODY { font-family: arial,verdana,helvetica; }
+  SPAN { font-family: arial,verdana,helvetica; }
+  SPAN.credits { font-size: x-small; }
+  SPAN.success { color: green; }
+  SPAN.error { color: red; }
+</STYLE>
+<LINK REL="Shortcut Icon" HREF="/favicon.ico">
+<SCRIPT TYPE="text/javascript" SRC="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></SCRIPT>
+<SCRIPT TYPE="text/javascript">//<![CDATA[
+$(function() {
+  var oldDrinkWaitHtml = '<span id="oldDrinkHeader"><i>Tending bar, please wait...</i></span>';
+  function byCount(a, b) {
+     return a.count - b.count;
+  }
+  function reloadDrinks() {
+    $("#oldDrink").empty();
+    $("#oldDrink").html(oldDrinkWaitHtml);
+    var drinks=new Array();
+    jQuery.ajax({
+      type: 'POST',
+      url: "http://graphite.sysdrink.info/render",
+      dataType: "json",
+      data: {
+        'format': 'json',
+        'target': 'sysdrink.drink.*',
+        'from': '-1hr'
+      },
+      error: function () {
+        $("#oldDrinkHeader").addClass('error');
+        $("#oldDrinkHeader").html("can't get data, try reload").fadeOut(5000,function(){
+          $(this).html("&nbsp;").show()
+          $("#"+drinkName).removeClass('error');
+        });
+      },
+      success: function( data, textStatus) {
+        for ( row in data ) {
+          item = new Object();
+          var longName = data[row].target;
+          item.name = longName.replace(/sysdrink.drink./g, "");
+          item.count=0;
+          for ( point in data[row].datapoints ) {
+            item.count += data[row].datapoints[point][0]
+          }
+          drinks.push(item)
+        }
+        $("#oldDrink").html('<span id="oldDrinkHeader"></span>');
+        for ( drink in drinks.sort(byCount) ) {
+          var d = drinks[drink].name
+          if ( d != "" ) {
+            $('#oldDrinkHeader').after('<li><a href="#" class="drink" name="'+d+'">'+d+'</a><span id="'+d+'">&nbsp;</span><br>');
+          }
+        }
+        $(".drink").click(function() {
+          var drinkName = $(this).attr('name')
+          console.log('drinking '+drinkName)
+          var drinkUrl = 'http://sysdrink.justinlintz.com/drink/'+drinkName
+          jQuery.ajax({
+            url: drinkUrl,
+            error: function () {
+              $("#"+drinkName).addClass('error');
+              $("#"+drinkName).html("&nbsp;X").fadeOut(2000,function(){
+                $("#"+drinkName).removeClass('error');
+                $(this).html("&nbsp;").show()
+              });
+            },
+            success: function () {
+              $("#"+drinkName).addClass('success');
+              $("#"+drinkName).html("&nbsp;&#x2713;").fadeOut(2000,function(){
+                $("#"+drinkName).removeClass('success');
+                $(this).html("&nbsp;").show()
+              });
+            }
+          });
+          return false;
+        });
+      }
+    });
+  }
+  $("#addNewDrink").click(function(){
+    var drinkName = $("#newDrinkName").val();
+    console.log('drinking '+drinkName);
+    $("#newDrinkName").val("");
+    var drinkUrl = 'http://sysdrink.justinlintz.com/drink/'+drinkName;
+    jQuery.ajax({
+      url: drinkUrl,
+      error: function () {
+        $("#newDrinkStatus").addClass('error');
+        $("#newDrinkStatus").html("&nbsp;not added").fadeOut(2000,function(){
+          $("#"+drinkName).removeClass('error');
+          $(this).html("&nbsp;").show()
+        });
+      },
+      success: function () {
+        $("#newDrinkStatus").addClass('success');
+        $("#newDrinkStatus").html("&nbsp;&#x2713; added").fadeOut(2000,function(){
+          $("#"+drinkName).removeClass('success');
+          $(this).html("&nbsp;").show()
+        });
+        reloadDrinks()
+      }
+    });
+  });
+  $("#oldDrinkReload").click(function(){
+    reloadDrinks()
+  });
+  reloadDrinks()
+});
+//]]></SCRIPT>
+</HEAD>
+<BODY>
+<H1>SysDrink 2012!</H1>
+<span class="credits">front-end by Tony Tonns</span><br>
+<span class="credits"><a href="http://j.mp/OrFdOv" target="_new">graphs</a>/data by Justin Lintz</span><br>
+<br>
+
+<div id="newDrink">
+New Drink:<br>
+<input type="text" name="newDrinkName" id="newDrinkName" size="15">
+<input type="submit" name="addNewDrink" value="add new drink" id="addNewDrink">
+</div>
+<span id="newDrinkStatus"></span>
+<br>
+
+Existing Drinks:
+<input type="submit" name="oldDrinkReload" value="reload" id="oldDrinkReload">
+<br>
+<div ID="oldDrink">
+<span id="oldDrinkHeader"><i>Tending bar, please wait...</i></span>
+</div>
+
+</BODY>
+</HTML>
