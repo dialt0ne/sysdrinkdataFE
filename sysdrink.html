@@ -73,7 +73,7 @@ $(function() {
             },
             success: function () {
               $("#"+drinkName).addClass('success');
-              $("#"+drinkName).html("&nbsp;&#x2713;").fadeOut(2000,function(){
+              $("#"+drinkName).html("&nbsp;&#x2713;").fadeOut(1000,function(){
                 $("#"+drinkName).removeClass('success');
                 $(this).html("&nbsp;").show()
               });
